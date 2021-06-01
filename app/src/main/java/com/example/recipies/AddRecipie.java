@@ -49,17 +49,24 @@ import models.User;
 
 public class AddRecipie extends Activity {
 
+    List<Integer> quantity_list;
+    List<String> unit_list;
+    List<String> ingredient;
+    TextInputLayout name;
+
     ArrayList<Spinner> chosen_units = new ArrayList<>();
     ArrayList<TextInputLayout> chosen_quantity = new ArrayList<>();
     ArrayList<TextInputLayout> chosen_name = new ArrayList<>();
     ArrayList<ImageView> step_image= new ArrayList<>();
     ArrayList<EditText> step_description= new ArrayList<>();
-    TextInputLayout name;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_recipie);
+
         name = findViewById(R.id.recipe_name);
+
         TextInputLayout quantity = findViewById(R.id.ingredient_quantity);
         TextInputLayout name = findViewById(R.id.ingredient_name);
         chosen_quantity.add(quantity);

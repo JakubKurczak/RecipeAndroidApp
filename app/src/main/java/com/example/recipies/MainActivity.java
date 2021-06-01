@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         String doc_path = "ignacy_jan";
         User.setDoc_id(doc_path);
 
-
+        setTitle("My Feed");
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         navigationView = findViewById(R.id.navigation);
@@ -141,6 +141,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     myFeed = MyFeed.newInstance();
 
                 }
+                setTitle("My Feed");
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.main_fragment, myFeed)
                         .commit();
@@ -148,6 +149,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case R.id.nav_my_recipies:
                 if(myProfile == null)
                     myProfile = MyProfile.newInstance(User.getDoc_id());
+                setTitle("My Recipies");
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.main_fragment, myProfile)
                         .commit();
@@ -155,6 +157,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case R.id.nav_saved_recipies:
                 if(likedRecipies == null)
                     likedRecipies = BaseRecipeListView.newInstance();
+                setTitle("Saved Recipies");
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.main_fragment, likedRecipies)
                         .commit();

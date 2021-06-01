@@ -1,6 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
-    android:layout_height="match_parent">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+<androidx.cardview.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/step_view"
+    android:layout_width="match_parent"
+    android:layout_height="500dp"
+    card_view:cardCornerRadius="4dp"
+    android:elevation="3dp"
+    android:layout_margin="10dp"
+    >
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/main_card"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+        <ImageView
+            android:id="@+id/step_image"
+            android:layout_width="match_parent"
+            android:layout_height="350dp"
+            android:src="@drawable/abc_vector_test"
+            android:scaleType="centerCrop"
+            card_view:layout_constraintTop_toTopOf="parent"
+            />
+        <TextView
+            android:id="@+id/step_count"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="30dp"
+            android:layout_margin="10dp"
+            card_view:layout_constraintTop_toBottomOf="@id/step_image"
+            card_view:layout_constraintBottom_toTopOf="@id/step_desciption"
+            card_view:layout_constraintStart_toStartOf="parent"
+            card_view:layout_constraintEnd_toStartOf="parent"
+            />
+        <TextView
+            android:id="@+id/step_desciption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            card_view:layout_constraintTop_toBottomOf="@id/step_count"
+            card_view:layout_constraintBottom_toBottomOf="parent"
+            card_view:layout_constraintStart_toStartOf="parent"
+            card_view:layout_constraintEnd_toEndOf="parent"
+            />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>

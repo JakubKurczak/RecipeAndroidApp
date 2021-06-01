@@ -1,12 +1,17 @@
 package com.example.recipies;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.LinearSnapHelper;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -19,22 +24,35 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import adapters.SnapHelperOneByOne;
+import adapters.StepAdapter;
 import models.ComplexRecipie;
 
 public class ShowRecipie extends AppCompatActivity {
     ComplexRecipie complexRecipie;
+    RecyclerView recyclerView;
+    StepAdapter stepAdapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_recipie);
+
+        recyclerView = findViewById(R.id.step_recycler_view);
+
         String complexRecipieRef = getIntent().getStringExtra("complexRecipieRef");
         complexRecipieRef = complexRecipieRef.split("/")[ complexRecipieRef.split("/").length -1];
         FirebaseFirestore.getInstance().collection("recipies").document(complexRecipieRef).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
                 complexRecipie = documentSnapshot.toObject(ComplexRecipie.class);
+                LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getApplicationContext());
+                linearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+                LinearSnapHelper linearSnapHelper = new SnapHelperOneByOne();
+                linearSnapHelper.attachToRecyclerView(recyclerView);
+                recyclerView.setLayoutManager(linearLayoutManager);
+                stepAdapter = new StepAdapter(getApplicationContext(),complexRecipie);
+                recyclerView.setAdapter(stepAdapter);
                 show();
-                Toast.makeText(getApplicationContext(),complexRecipie.getName(),Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -43,13 +61,7 @@ public class ShowRecipie extends AppCompatActivity {
         getSupportActionBar().setTitle(complexRecipie.getName());
         LinearLayout mainLinearLayout = findViewById(R.id.main_window);
 
-        TextView textView = new TextView(this);
-        LinearLayout.LayoutParams textViewParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        textView.setLayoutParams(textViewParams);
-        textView.setText("Ingredients");
-        textView.setTextSize(TypedValue.COMPLEX_UNIT_SP,30);
 
-        mainLinearLayout.addView(textView);
 
         for(int index =0;index < complexRecipie.getIngredient_name().size();index++){
             LinearLayout linearLayout = new LinearLayout(this);
@@ -86,42 +98,11 @@ public class ShowRecipie extends AppCompatActivity {
             mainLinearLayout.addView(linearLayout);
         }
 
-        for(int index =0;index < complexRecipie.getStep_pic_url().size();index++){
-            TextView step = new TextView(this);
-            LinearLayout.LayoutParams stepParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-            step.setLayoutParams(stepParams);
-            step.setText("Step" + String.valueOf(index+1));
-            step.setTextSize(TypedValue.COMPLEX_UNIT_SP,30);
 
-
-
-            TextView description = new TextView(this);
-            LinearLayout.LayoutParams descriptionParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-            description.setLayoutParams(descriptionParams);
-            description.setText(complexRecipie.getStep_desc().get(index));
-            description.setTextSize(TypedValue.COMPLEX_UNIT_SP,15);
-
-            ImageView imageView = new ImageView(this);
-            LinearLayout.LayoutParams imageViewParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, pxToDp(300));
-            imageView.setLayoutParams(imageViewParams);
-
-            StorageReference storageReference = FirebaseStorage.getInstance().getReference().child(complexRecipie.getStep_pic_url().get(index));
-            final long ONE_MEGABYTE = 1024 * 1024;
-            storageReference.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
-                @Override
-                public void onSuccess(byte[] bytes) {
-                    // Data for "images/island.jpg" is returns, use this as needed
-                    Bitmap bmp= BitmapFactory.decodeByteArray(bytes,0,bytes.length);
-                    imageView.setImageBitmap(bmp);
-                }
-            });
-
-            mainLinearLayout.addView(step);
-            mainLinearLayout.addView(imageView);
-            mainLinearLayout.addView(description);
-        }
     }
     int pxToDp (int px){
         return (int)(px * (this.getResources().getDisplayMetrics().xdpi/ DisplayMetrics.DENSITY_DEFAULT));
     }
+
+
 }
