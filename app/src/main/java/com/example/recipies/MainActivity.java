@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        String doc_path = "ignacy_jan";
+        String doc_path = "jan_paderewski";
         User.setDoc_id(doc_path);
 
         setTitle("My Feed");
@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
         drawerLayout.addDrawerListener(actionBarDrawerToggle);
-
+        toolbar.setNavigationIcon(R.drawable.ic_baseline_dehaze_24);
         if (savedInstanceState == null) {
             myFeed = MyFeed.newInstance();
 

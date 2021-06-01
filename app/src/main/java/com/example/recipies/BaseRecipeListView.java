@@ -51,6 +51,13 @@ public class BaseRecipeListView extends Fragment {
         BaseRecipeListView fragment = new BaseRecipeListView();
        
 
+
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         FirebaseFirestore.getInstance().collection("users").document(User.getDoc_id())
                 .collection("likes")
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
@@ -61,8 +68,8 @@ public class BaseRecipeListView extends Fragment {
                             switch (dc.getType()) {
                                 case ADDED:
                                     BaseRecipe recipe = dc.getDocument().toObject(BaseRecipe.class);
-                                    fragment.recipes.add(recipe);
-                                    fragment.baseRecipeCardAdapter.notifyDataSetChanged();
+                                    recipes.add(recipe);
+                                    baseRecipeCardAdapter.notifyDataSetChanged();
                                     break;
                                 case MODIFIED:
                                     break;
@@ -74,12 +81,6 @@ public class BaseRecipeListView extends Fragment {
                         }
                     }
                 });
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
 
     }
 

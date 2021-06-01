@@ -92,11 +92,19 @@ public class MyProfile extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_my_profile, container, false);
+
+
+        return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
         floatingActionButton = view.findViewById(R.id.add_recipe);
         recyclerView = view.findViewById(R.id.my_recipies);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this.getContext());
         this.recyclerView.setLayoutManager(linearLayoutManager);
-         baseRecipeCardAdapter = new BaseRecipeCardAdapter(this.getContext(), this.my_recipies);
+        baseRecipeCardAdapter = new BaseRecipeCardAdapter(this.getContext(), this.my_recipies);
         this.recyclerView.setAdapter(baseRecipeCardAdapter);
 
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
@@ -107,7 +115,5 @@ public class MyProfile extends Fragment {
             }
         });
 
-        return view;
     }
-
 }

@@ -38,62 +38,11 @@
             android:textSize="25dp"
             android:text="Ingredients"
             />
-        <LinearLayout
-            android:id="@+id/ingredients"
-            android:orientation="vertical"
+        <androidx.recyclerview.widget.RecyclerView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="15dp"
-                android:orientation="horizontal"
-                >
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/ingredient_quantity"
-                    android:layout_width="50dp"
-                    android:layout_height="match_parent"
-                    android:layout_marginRight="5dp"
-                    android:layout_marginLeft="5dp"
-                    android:hint="1"
-                    >
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/quantity"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        />
-
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <Spinner
-                    android:id="@+id/ingredient_unit"
-                    android:layout_width="70dp"
-                    android:layout_height="match_parent"
-                    android:layout_marginRight="5dp"
-                    android:layout_marginLeft="5dp"
-                    />
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/ingredient_name"
-
-                    android:layout_marginRight="5dp"
-                    android:layout_marginLeft="5dp"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    >
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/i_name"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        />
-
-                </com.google.android.material.textfield.TextInputLayout>
-            </LinearLayout>
-        </LinearLayout>
+            android:layout_height="wrap_content"
+            android:id="@+id/ingredient_recycler_view"
+            />
 
         <Button
             android:id="@+id/containedButton"
@@ -104,47 +53,12 @@
             app:icon="@drawable/ic_baseline_add_24"
             />
 
-        <LinearLayout
-            android:id="@+id/steps"
+
+        <androidx.recyclerview.widget.RecyclerView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_margin="15dp"
-
-            >
-            <LinearLayout
-                android:id="@+id/step_1"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                >
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textSize="30sp"
-                    android:text="Step 1"
-                    />
-
-
-                <ImageView
-                    android:id="@+id/step_1_image"
-                    android:layout_width="match_parent"
-                    android:layout_height="300dp"
-                    />
-
-                <EditText
-                    android:id="@+id/step_1_text"
-                    android:inputType="textMultiLine"
-                    android:layout_height="wrap_content"
-                    android:layout_width="match_parent"
-                    android:scrollbars="vertical"
-                />
-            </LinearLayout>
-
-
-
-        </LinearLayout>
-
+            android:id="@+id/step_input_view"
+            />
         <Button
             android:id="@+id/add_step"
             android:layout_width="wrap_content"

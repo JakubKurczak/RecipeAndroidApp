@@ -49,7 +49,7 @@ public class BaseRecipeCardAdapter extends RecyclerView.Adapter<BaseRecipeCardAd
         holder.likesNumber.setText(Integer.toString(model.getLikeNumber()));
         holder.recipeName.setText(model.getName());
         StorageReference storageReference = FirebaseStorage.getInstance().getReference().child(model.getPhoto_url());
-        final long ONE_MEGABYTE = 1024 * 1024;
+        final long ONE_MEGABYTE = 1024 * 1024*5;
         storageReference.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
             @Override
             public void onSuccess(byte[] bytes) {

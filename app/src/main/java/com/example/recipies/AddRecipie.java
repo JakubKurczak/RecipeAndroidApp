@@ -2,15 +2,19 @@ package com.example.recipies;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.hardware.display.DisplayManager;
 import android.media.Image;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.InputType;
@@ -40,60 +44,55 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import adapters.IngredientsAdderAdapter;
+import adapters.StepAdderAdapter;
 import models.BaseRecipe;
 import models.ComplexRecipie;
 import models.User;
 
-public class AddRecipie extends Activity {
+public class AddRecipie extends AppCompatActivity {
 
-    List<Integer> quantity_list;
-    List<String> unit_list;
-    List<String> ingredient;
+    List<Integer> quantity = new ArrayList<>(Arrays.asList(0));
+    List<String> units= new ArrayList<>(Arrays.asList(""));
+    List<String> ingredient= new ArrayList<>(Arrays.asList(""));
+    List<String> step_description_list = new ArrayList<>(Arrays.asList(""));
+    List<Bitmap> bitmap_list;
+    List<Integer> spinner_position_list = new ArrayList<>(Arrays.asList(0));
+    RecyclerView ingredients_recycler_view;
+    IngredientsAdderAdapter ingredientsAdderAdapter;
     TextInputLayout name;
 
-    ArrayList<Spinner> chosen_units = new ArrayList<>();
-    ArrayList<TextInputLayout> chosen_quantity = new ArrayList<>();
-    ArrayList<TextInputLayout> chosen_name = new ArrayList<>();
-    ArrayList<ImageView> step_image= new ArrayList<>();
-    ArrayList<EditText> step_description= new ArrayList<>();
+    RecyclerView steps_recycler_view;
+    StepAdderAdapter stepAdderAdapter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_recipie);
-
+        bitmap_list = new ArrayList<>(Arrays.asList(
+                BitmapFactory.decodeResource(getResources(),R.drawable.ic_baseline_add_24)));
         name = findViewById(R.id.recipe_name);
 
-        TextInputLayout quantity = findViewById(R.id.ingredient_quantity);
-        TextInputLayout name = findViewById(R.id.ingredient_name);
-        chosen_quantity.add(quantity);
-        chosen_name.add(name);
+        ingredientsAdderAdapter = new IngredientsAdderAdapter(
+                getApplicationContext(),
+                quantity,
+                units,
+                ingredient,
+                spinner_position_list
+                );
 
-        Spinner unit_choice = findViewById(R.id.ingredient_unit);
-
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,R.array.units,android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        unit_choice.setAdapter(adapter);
-        chosen_units.add(unit_choice);
-        unit_choice.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                unit_choice.setSelection(position);
-                Toast.makeText(parent.getContext(),
-                        "OnItemSelectedListener : " + unit_choice.getSelectedItem().toString(),
-                        Toast.LENGTH_SHORT).show();
-
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-
-            }
-        });
+        ingredients_recycler_view = findViewById(R.id.ingredient_recycler_view);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getApplicationContext());
+        ingredients_recycler_view.setLayoutManager(linearLayoutManager);
+        ingredients_recycler_view.setAdapter(ingredientsAdderAdapter);
 
         Button button = findViewById(R.id.containedButton);
         button.setOnClickListener(new View.OnClickListener() {
@@ -103,16 +102,21 @@ public class AddRecipie extends Activity {
             }
         });
 
-        ImageView imageView = findViewById(R.id.step_1_image);
-        this.step_image.add(imageView);
-        imageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dispatchTakePictureIntent();
-            }
-        });
+
+        stepAdderAdapter = new StepAdderAdapter(
+                this,
+                bitmap_list,
+                step_description_list
+        );
+
+        steps_recycler_view = findViewById(R.id.step_input_view);
+        LinearLayoutManager linearLayoutManagerForSteps = new LinearLayoutManager(getApplicationContext());
+        steps_recycler_view.setLayoutManager(linearLayoutManagerForSteps);
+        steps_recycler_view.setAdapter(stepAdderAdapter);
+
         Button finish = findViewById(R.id.finish);
         Button cancel = findViewById(R.id.cancel);
+
         finish.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -135,8 +139,7 @@ public class AddRecipie extends Activity {
             }
         });
 
-        EditText editText = findViewById(R.id.step_1_text);
-        step_description.add(editText);
+
     }
     private void dispatchTakePictureIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -149,122 +152,44 @@ public class AddRecipie extends Activity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1 && resultCode == RESULT_OK) {
             Bundle extras = data.getExtras();
             Bitmap imageBitmap = (Bitmap) extras.get("data");
-            step_image.get(step_image.size()-1).setImageBitmap(imageBitmap);
+            bitmap_list.set(bitmap_list.size() -1,imageBitmap);
+            stepAdderAdapter.notifyDataSetChanged();
+        }else if(requestCode == 3 && resultCode == RESULT_OK){
+
+            Uri selectedImage = data.getData();
+            Bitmap bitmap = null;
+            try {
+                bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImage);
+                bitmap_list.set(bitmap_list.size() -1,bitmap);
+                stepAdderAdapter.notifyDataSetChanged();
+            } catch (FileNotFoundException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
     }
 
     public void addIngredient(){
-        LinearLayout linearLayout = new LinearLayout(this);
-
-        LinearLayout.LayoutParams params_1 = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        params_1.setMargins(pxToDp(15),pxToDp(15),pxToDp(15),pxToDp(15));
-        linearLayout.setLayoutParams(params_1);
-        linearLayout.setOrientation(LinearLayout.HORIZONTAL);
-
-        TextInputLayout textInputLayout = new TextInputLayout(this);
-        LinearLayout.LayoutParams params_2 = new LinearLayout.LayoutParams(pxToDp(50), LinearLayout.LayoutParams.WRAP_CONTENT);
-        textInputLayout.setLayoutParams(params_2);
-
-
-        TextInputEditText textInputEditText = new TextInputEditText(this);
-        LinearLayout.LayoutParams params_3 = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        textInputEditText.setLayoutParams(params_3);
-
-        textInputLayout.addView(textInputEditText);
-
-        chosen_quantity.add(textInputLayout);
-
-        Spinner spinner = new Spinner(this);
-        LinearLayout.LayoutParams params_4 = new LinearLayout.LayoutParams(pxToDp(70), LinearLayout.LayoutParams.WRAP_CONTENT);
-        params_4.setMargins(pxToDp(5),0,pxToDp(5),0);
-        spinner.setLayoutParams(params_4);
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,R.array.units,android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(adapter);
-
-        chosen_units.add(spinner);
-
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                spinner.setSelection(position);
-                Toast.makeText(parent.getContext(),
-                        "OnItemSelectedListener : " + spinner.getSelectedItem().toString(),
-                        Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-
-        TextInputLayout textInputLayout_2 = new TextInputLayout(this);
-        LinearLayout.LayoutParams params_5 = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        params_5.setMargins(pxToDp(5),0,pxToDp(5),0);
-        textInputLayout_2.setLayoutParams(params_5);
-
-
-        TextInputEditText textInputEditText_2 = new TextInputEditText(this);
-        LinearLayout.LayoutParams params_6 = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        textInputEditText_2.setLayoutParams(params_6);
-
-        textInputLayout_2.addView(textInputEditText_2);
-        chosen_name.add(textInputLayout_2);
-
-        linearLayout.addView(textInputLayout);
-        linearLayout.addView(spinner);
-        linearLayout.addView(textInputLayout_2);
-
-        LinearLayout ingredients = findViewById(R.id.ingredients);
-        ingredients.addView(linearLayout);
-
+        quantity.add(0);
+        units.add("");
+        ingredient.add("");
+        spinner_position_list.add(0);
+        ingredientsAdderAdapter.item_count += 1;
+        ingredientsAdderAdapter.notifyDataSetChanged();
     }
 
     void addStep(){
-        LinearLayout linearLayout = new LinearLayout(this);
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        linearLayout.setLayoutParams(layoutParams);
-        linearLayout.setOrientation(LinearLayout.VERTICAL);
-
-        TextView textView = new TextView(this);
-        LinearLayout.LayoutParams textViewParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        textView.setLayoutParams(textViewParams);
-        textView.setText("Step "+String.valueOf(step_image.size()+1));
-        textView.setTextSize(TypedValue.COMPLEX_UNIT_SP,30);
-
-        ImageView imageView = new ImageView(this);
-        LinearLayout.LayoutParams imageViewParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, pxToDp(300));
-        imageView.setLayoutParams(imageViewParams);
-
-        imageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dispatchTakePictureIntent();
-            }
-        });
-
-
-
-        EditText editText = new EditText(this);
-        LinearLayout.LayoutParams editTextParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, pxToDp(300));
-        editText.setLayoutParams(editTextParams);
-        editText.setSingleLine(false);
-        editText.setVerticalScrollBarEnabled(true);
-
-        step_description.add(editText);
-        step_image.add(imageView);
-
-
-        linearLayout.addView(textView);
-        linearLayout.addView(imageView);
-        linearLayout.addView(editText);
-
-        LinearLayout steps = findViewById(R.id.steps);
-        steps.addView(linearLayout);
+        bitmap_list.add(BitmapFactory.decodeResource(getResources(),R.drawable.ic_baseline_add_24));
+        step_description_list.add("");
+        stepAdderAdapter.item_count += 1;
+        stepAdderAdapter.notifyDataSetChanged();
     }
 
     void onCancel(){
@@ -274,33 +199,15 @@ public class AddRecipie extends Activity {
     void onFinish(){
 
         String recipie_name = name.getEditText().getText().toString();
-        List<String> units = new ArrayList<>();
-        List<Integer> quantity = new ArrayList<>();
-        List<String> ingredient = new ArrayList<>();
         List<String> pic_url = new ArrayList<>();
-        List<String> step_desc = new ArrayList<>();
 
-        for(Spinner u: chosen_units){
-            units.add(u.getSelectedItem().toString());
-        }
 
-        for(TextInputLayout l: chosen_quantity){
-            quantity.add(Integer.valueOf(l.getEditText().getText().toString()));
-        }
 
-        for(TextInputLayout l: chosen_name){
-            ingredient.add(l.getEditText().getText().toString());
-        }
 
-        for(EditText e: step_description){
-            step_desc.add(e.getText().toString());
-        }
-
-        for(int index = 0;index < step_image.size();index++){
-            ImageView imageView = step_image.get(index);
+        for(int index = 0;index < bitmap_list.size();index++){
             String pic_name_url = User.getMail()+ recipie_name +"step_"+String.valueOf(index+1);
             StorageReference storageReference = FirebaseStorage.getInstance().getReference().child(pic_name_url);
-            Bitmap bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
+            Bitmap bitmap = bitmap_list.get(index);
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
@@ -325,13 +232,13 @@ public class AddRecipie extends Activity {
             pic_url.add(pic_name_url);
         }
 
-        ComplexRecipie complexRecipie = new ComplexRecipie(recipie_name,quantity,units,ingredient,pic_url,step_desc,0);
+        ComplexRecipie complexRecipie = new ComplexRecipie(recipie_name,quantity,units,ingredient,pic_url,step_description_list,0);
 
         FirebaseFirestore.getInstance().collection("recipies").
                 add(complexRecipie).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
             @Override
             public void onSuccess(DocumentReference documentReference) {
-                BaseRecipe recipe = new BaseRecipe(recipie_name,0,documentReference.getPath(),pic_url.get(0));
+                BaseRecipe recipe = new BaseRecipe(recipie_name,0,documentReference.getPath(),pic_url.get(pic_url.size()-1));
                 FirebaseFirestore.getInstance().collection("users").document(User.getDoc_id())
                         .collection("recipies").add(recipe).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                     @Override
