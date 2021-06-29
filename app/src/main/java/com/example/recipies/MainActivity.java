@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        String doc_path = "jan_paderewski";
+        String doc_path = "witold_gombrowicz";
         User.setDoc_id(doc_path);
 
         setTitle("My Feed");

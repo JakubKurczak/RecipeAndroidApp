@@ -2,23 +2,31 @@ package com.example.recipies;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.VectorDrawable;
 import android.hardware.display.DisplayManager;
 import android.media.Image;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.InputType;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
@@ -77,8 +85,10 @@ public class AddRecipie extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_recipie);
-        bitmap_list = new ArrayList<>(Arrays.asList(
-                BitmapFactory.decodeResource(getResources(),R.drawable.ic_baseline_add_24)));
+
+            bitmap_list = new ArrayList<>(Arrays.asList(
+                    getBitmap(getApplicationContext(),R.drawable.ic_baseline_add_24)));
+
         name = findViewById(R.id.recipe_name);
 
         ingredientsAdderAdapter = new IngredientsAdderAdapter(
@@ -186,7 +196,7 @@ public class AddRecipie extends AppCompatActivity {
     }
 
     void addStep(){
-        bitmap_list.add(BitmapFactory.decodeResource(getResources(),R.drawable.ic_baseline_add_24));
+        bitmap_list.add(getBitmap(getApplicationContext(),R.drawable.ic_baseline_add_24));
         step_description_list.add("");
         stepAdderAdapter.item_count += 1;
         stepAdderAdapter.notifyDataSetChanged();
@@ -251,7 +261,27 @@ public class AddRecipie extends AppCompatActivity {
 
         finish();
     }
+    private static Bitmap getBitmap(Context context, int drawableId) {
 
+        Drawable drawable = ContextCompat.getDrawable(context, drawableId);
+        if (drawable instanceof BitmapDrawable) {
+            return BitmapFactory.decodeResource(context.getResources(), drawableId);
+        } else if (drawable instanceof VectorDrawable) {
+            return getBitmap((VectorDrawable) drawable);
+        } else {
+            throw new IllegalArgumentException("unsupported drawable type");
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private static Bitmap getBitmap(VectorDrawable vectorDrawable) {
+        Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(),
+                vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        vectorDrawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        vectorDrawable.draw(canvas);
+        return bitmap;
+    }
     int pxToDp (int px){
         return (int)(px * (this.getResources().getDisplayMetrics().xdpi/ DisplayMetrics.DENSITY_DEFAULT));
     }

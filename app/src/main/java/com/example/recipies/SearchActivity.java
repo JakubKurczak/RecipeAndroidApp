@@ -40,9 +40,6 @@ public class SearchActivity extends AppCompatActivity {
         handleIntent(getIntent());
     }
 
-    public void add_recipies(){
-
-    }
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -63,7 +60,7 @@ public class SearchActivity extends AppCompatActivity {
                         if(task.isSuccessful()){
                             for(QueryDocumentSnapshot doc: task.getResult()){
                                 ComplexRecipie recipie = doc.toObject(ComplexRecipie.class);
-                                BaseRecipe baseRecipe = new BaseRecipe(recipie.getName(),recipie.getLikes(),doc.getId(),recipie.getStep_pic_url().get(0));
+                                BaseRecipe baseRecipe = new BaseRecipe(recipie.getName(),recipie.getLikes(),doc.getId(),recipie.getStep_pic_url().get(recipie.getStep_pic_url().size() -1));
                                 recipeList.add(baseRecipe);
                                 baseRecipeCardAdapter.notifyDataSetChanged();
                             }

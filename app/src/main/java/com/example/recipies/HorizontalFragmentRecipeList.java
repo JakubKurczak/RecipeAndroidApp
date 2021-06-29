@@ -2,6 +2,8 @@ package com.example.recipies;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -10,12 +12,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import adapters.BaseRecipeCardAdapter;
 import adapters.ShortCartAdapter;
 import models.BaseRecipe;
+import models.User;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -24,11 +33,8 @@ import models.BaseRecipe;
  */
 public class HorizontalFragmentRecipeList extends Fragment {
     private RecyclerView recyclerView;
-    private ArrayList<BaseRecipe> recipes = new ArrayList<>(Arrays.asList(new BaseRecipe("Bacon & eggs", 8),
-            new BaseRecipe("Scramble eggs", 3), new BaseRecipe("Szakszuka", 41),
-            new BaseRecipe("Oatmeal", 12), new BaseRecipe("French toast ", 3),
-            new BaseRecipe("Water and slice of bread", 11)));
-
+    private ArrayList<BaseRecipe> recipes = new ArrayList<>();
+    ShortCartAdapter baseRecipeCardAdapter;
 
     public HorizontalFragmentRecipeList() {
         // Required empty public constructor
@@ -43,18 +49,47 @@ public class HorizontalFragmentRecipeList extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        FirebaseFirestore.getInstance().collection("users").document(User.getDoc_id())
+                .collection("recipies")
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
 
+                        for (DocumentChange dc : value.getDocumentChanges()) {
+                            switch (dc.getType()) {
+                                case ADDED:
+                                    BaseRecipe recipe = dc.getDocument().toObject(BaseRecipe.class);
+                                    recipes.add(recipe);
+                                    baseRecipeCardAdapter.notifyDataSetChanged();
+                                    break;
+                                case MODIFIED:
+                                    break;
+                                case REMOVED:
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                });
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view =  inflater.inflate(R.layout.fragment_horizontal_recipe_list, container, false);
+
+        return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
         recyclerView = view.findViewById(R.id.horizontal_recipe_list);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this.getContext(), LinearLayoutManager.HORIZONTAL,false);
         recyclerView.setLayoutManager(linearLayoutManager);
-        ShortCartAdapter baseRecipeCardAdapter = new ShortCartAdapter(this.getContext(), recipes);
+        baseRecipeCardAdapter= new ShortCartAdapter(this.getContext(), recipes);
         recyclerView.setAdapter(baseRecipeCardAdapter);
-        return view;
     }
+
 }

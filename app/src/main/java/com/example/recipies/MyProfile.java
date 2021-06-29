@@ -23,6 +23,7 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ import java.util.Arrays;
 
 import adapters.BaseRecipeCardAdapter;
 import models.BaseRecipe;
+import models.User;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -43,49 +45,49 @@ public class MyProfile extends Fragment {
     RecyclerView recyclerView;
     FloatingActionButton floatingActionButton;
     BaseRecipeCardAdapter baseRecipeCardAdapter;
+
     public MyProfile() {
         // Required empty public constructor
+
     }
 
 
     public static MyProfile newInstance(String doc_id) {
         MyProfile fragment = new MyProfile();
-        fragment.add_recipies(doc_id);
         return fragment;
-    }
-
-    private void add_recipies(String doc_id){
-        FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
-
-
-        firebaseFirestore.collection("users/"+doc_id+"/recipies")
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-
-                for (DocumentChange dc : value.getDocumentChanges()) {
-                    switch (dc.getType()) {
-                        case ADDED:
-                            BaseRecipe recipe = dc.getDocument().toObject(BaseRecipe.class);
-                            my_recipies.add(recipe);
-                            baseRecipeCardAdapter.notifyDataSetChanged();
-                            break;
-                        case MODIFIED:
-                            break;
-                        case REMOVED:
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            }
-        });
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        FirebaseFirestore.getInstance().collection("users").document(User.getDoc_id())
+                .collection("recipies")
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
 
+                        for (DocumentChange dc : value.getDocumentChanges()) {
+                            switch (dc.getType()) {
+                                case ADDED:
+                                    BaseRecipe recipe = dc.getDocument().toObject(BaseRecipe.class);
+                                    boolean is_in_recipies = false;
+                                    for(BaseRecipe r: my_recipies)
+                                        if (r.getName() == recipe.getName())
+                                            is_in_recipies =true;
+                                    if(!is_in_recipies)
+                                        my_recipies.add(recipe);
+                                    recyclerView.getAdapter().notifyDataSetChanged();
+                                    break;
+                                case MODIFIED:
+                                    break;
+                                case REMOVED:
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                });
     }
 
     @Override
@@ -104,7 +106,7 @@ public class MyProfile extends Fragment {
         recyclerView = view.findViewById(R.id.my_recipies);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this.getContext());
         this.recyclerView.setLayoutManager(linearLayoutManager);
-        baseRecipeCardAdapter = new BaseRecipeCardAdapter(this.getContext(), this.my_recipies);
+        baseRecipeCardAdapter = new BaseRecipeCardAdapter(this.getContext(), my_recipies);
         this.recyclerView.setAdapter(baseRecipeCardAdapter);
 
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
